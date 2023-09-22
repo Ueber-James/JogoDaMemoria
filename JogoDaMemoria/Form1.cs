@@ -16,6 +16,7 @@ namespace JogoDaMemoria
         int movements, click, cardFound, tagIndex;
         Image[] img = new Image[5];
         List<string> lista = new List<string>();
+        List<Point> positions = new List<Point>();
         int[] tags = new int[2];
 
 
@@ -37,7 +38,7 @@ namespace JogoDaMemoria
                 img[tagIndex] = item.Image;
                 item.Image = Properties.Resources.verse;
                 item.Enabled = true;
-
+                
             }
 
             Random();
@@ -45,32 +46,35 @@ namespace JogoDaMemoria
 
         private void Random()
         {
+            Random rdn = new Random();
+            
+
+            // Defina as posições possíveis para as cartas
+            int[] xP = { 12, 224, 434, 657, 878 };
+            int[] yP = { 26, 212 };
+
+            foreach (int x in xP)
+            {
+                foreach (int y in yP)
+                {
+                    positions.Add(new Point(x, y));
+                }
+            }
+
+            // Embaralhe as posições aleatoriamente
+            positions = positions.OrderBy(p => rdn.Next()).ToList();
+
+            int cardIndex = 0;
             foreach (PictureBox item in Controls.OfType<PictureBox>())
             {
-                Random rdn = new Random();
-
-                int[] xP = { 27, 216, 405, 594, 783, 403 };
-                int[] yP = { 26, 182, 184 };
-
-            Repeat:
-                var X = xP[rdn.Next(0, xP.Length)];
-                var Y = yP[rdn.Next(0, yP.Length)];
-
-
-
-                string verify = X.ToString() + Y.ToString();
-
-                if (lista.Contains(verify))
+                if (cardIndex >= positions.Count)
                 {
-                    goto Repeat;
-                }
-                else
-                {
-                    item.Location = new Point(X, Y);
-                    lista.Add(verify);
+                    // Se não houver mais posições disponíveis, saia do loop.
+                    break;
                 }
 
-
+                item.Location = positions[cardIndex];
+                cardIndex++;
             }
         }
 
@@ -130,6 +134,29 @@ namespace JogoDaMemoria
                         item.Image = Properties.Resources.verse;
                         item.Refresh();
                     }
+                }
+            }
+            EndGame();
+        }
+
+        private void EndGame()
+        {
+            if (cardFound == (img.Length * 2))
+            {
+                MessageBox.Show($"Parabens, você fez {movements.ToString()} pontos");
+              DialogResult msg =  MessageBox.Show("Deseja continual jogando?", "Caixa de Pergunta", MessageBoxButtons.YesNo);
+
+                if (msg == DialogResult.Yes)
+                {
+                    click = 0; movements = 0; cardFound = 0;
+                    lista.Clear();
+                    Start();
+
+                    
+                }else if (msg == DialogResult.No)
+                {
+                    MessageBox.Show("Obrigado por jogar");
+                    Application.Exit();
                 }
             }
         }
